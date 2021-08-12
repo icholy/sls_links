@@ -32,6 +32,8 @@ func TestQuery(t *testing.T) {
 			"source":       []string{"'*2Fapplication*2Fsample1", "'*2Fapplication*2Fsample2"},
 		})
 	})
+
+	assert.DeepEqual(t, q.Encode(), "$3FqueryDetail$3D$257E$2528editorString$257E$2527fields*20*40timestamp*2C*20*40message*0A*20*20*20*20*7C*20filter*20*40message*20not*20like*20$2527example$2527*0A*20*20*20*20*7C*20sort*20*40timestamp*20asc*0A*20*20*20*20*7C*20limit*20100$257Eend$257E0$257EisLiveTrail$257Efalse$257Esource$257E$2528$257E$2527*2Fapplication*2Fsample1$257E$2527*2Fapplication*2Fsample2$2529$257Estart$257E-3600$257EtimeType$257E$2527RELATIVE$257Eunit$257E$2527seconds$2529")
 }
 
 func TestEscape(t *testing.T) {
