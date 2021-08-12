@@ -52,7 +52,7 @@ func main() {
 	flag.StringVar(&region, "region", "us-east-1", "aws region")
 	flag.StringVar(&env, "env", "staging", "deployment environment")
 	flag.StringVar(&filename, "file", "serverless.yml", "serverless configuration file")
-	flag.BoolVar(&openlambda, "open.lambda", false, "open all lambda links in default browser")
+	flag.BoolVar(&openlambda, "open.lambdas", false, "open all lambda links in default browser")
 	flag.BoolVar(&openlogs, "open.logs", false, "open all log links in default browser")
 	flag.Parse()
 	data, err := os.ReadFile(filename)
