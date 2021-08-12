@@ -48,12 +48,13 @@ func (s *ServerlessYML) LogInsightsURL(region, env string) string {
 
 func main() {
 	var region, env, filename string
-	var openlambda, openlogs bool
+	var openlambda, openlogs, openall bool
 	flag.StringVar(&region, "region", "us-east-1", "aws region")
 	flag.StringVar(&env, "env", "staging", "deployment environment")
 	flag.StringVar(&filename, "file", "serverless.yml", "serverless configuration file")
 	flag.BoolVar(&openlambda, "open.lambdas", false, "open all lambda links in default browser")
 	flag.BoolVar(&openlogs, "open.logs", false, "open all log links in default browser")
+	flag.BoolVar(&openall, "open", false, "open all links in default browser")
 	flag.Parse()
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -70,12 +71,12 @@ func main() {
 		fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
 
 		fmt.Fprintf(tw, "LogLink:\t%s\n\n", lambda.LogLink)
-		if openlambda {
+		if openall || openlambda {
 			if err := OpenBrowser(lambda.Link); err != nil {
 				log.Println(err)
 			}
 		}
-		if openlogs {
+		if openall || openlogs {
 			if err := OpenBrowser(lambda.LogLink); err != nil {
 				log.Println(err)
 			}
