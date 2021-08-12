@@ -17,7 +17,6 @@ var escape = strings.NewReplacer(
 	"=", "$253D",
 	"!", "$2521",
 	"\"", "$2522",
-	"_", "$252F",
 )
 
 func LogLink(region, lambda string) string {
