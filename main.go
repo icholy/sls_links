@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"text/tabwriter"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Lambda struct {
-	Name    string
-	Link    string
-	LogLink string
+	Name     string
+	Link     string
+	LogGroup string
+	LogLink  string
 }
 
 type ServerlessYML struct {
@@ -22,32 +22,29 @@ type ServerlessYML struct {
 	Functions map[string]struct{} `yaml:"functions"`
 }
 
-var escape = strings.NewReplacer(
-	"/", "$252F",
-	",", "$252C",
-	"[", "$255B",
-	"]", "$255D",
-	"=", "$253D",
-	"!", "$2521",
-	"\"", "$2522",
-	"_", "$252F",
-)
-
 func (s *ServerlessYML) Lambdas(region, env string) []Lambda {
 	lambdas := []Lambda{}
 	for key := range s.Functions {
 		name := fmt.Sprintf("%s-%s-%s", s.Service, env, key)
 		lambdas = append(lambdas, Lambda{
-			Name: name,
-			Link: fmt.Sprintf("https://console.aws.amazon.com/lambda/home?region=%s#/functions/%s", region, name),
-			LogLink: fmt.Sprintf(
-				"https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:log-groups/log-group/%s",
-				region,
-				escape.Replace("/aws/lambda/"+name),
-			),
+			Name:    name,
+			Link:    Link(region, name),
+			LogLink: LogLink(region, name),
 		})
 	}
 	return lambdas
+}
+
+func (s *ServerlessYML) LogInsightsURL(region, env string) string {
+	query := Query{}
+	for _, lambda := range s.Lambdas(region, env) {
+		query.Add("source", "/aws/lambda/"+lambda.Name, true)
+	}
+	return fmt.Sprintf(
+		"https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights%s",
+		region,
+		query.Encode("queryDetail"),
+	)
 }
 
 func main() {
@@ -65,6 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+
 	for _, lambda := range config.Lambdas(region, env) {
 		fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
 		fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
