@@ -2,6 +2,12 @@
 
 Find the lambda & cloudwatch links for a serverless service or provider.
 
+## Install
+
+``` sh
+$ go install github.com/icholy/sls_links@latest
+```
+
 ## Example:
 
 ```
