@@ -35,14 +35,14 @@ func (s *ServerlessYML) Lambdas(region, env string) []Lambda {
 }
 
 func (s *ServerlessYML) LogInsightsURL(region, env string) string {
-	query := Query{}
+	query := QueryDetails{}
 	for _, lambda := range s.Lambdas(region, env) {
 		query.Add("source", "/aws/lambda/"+lambda.Name, true)
 	}
 	return fmt.Sprintf(
 		"https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights%s",
 		region,
-		query.Encode("queryDetail"),
+		query.Encode(),
 	)
 }
 

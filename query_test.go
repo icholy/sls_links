@@ -11,7 +11,7 @@ func TestQuery(t *testing.T) {
 
 	expression := "fields @timestamp, @message\n    | filter @message not like 'example'\n    | sort @timestamp asc\n    | limit 100"
 
-	q := Query{}
+	q := QueryDetails{}
 	q.Add("end", "0", false)
 	q.Add("start", "-3600", false)
 	q.Add("timeType", "RELATIVE", true)
@@ -22,7 +22,7 @@ func TestQuery(t *testing.T) {
 	q.Add("source", "/application/sample2", true)
 
 	t.Run("PrimitiveEscape", func(t *testing.T) {
-		assert.DeepEqual(t, q, Query{
+		assert.DeepEqual(t, q, QueryDetails{
 			"end":          []string{"0"},
 			"start":        []string{"-3600"},
 			"timeType":     []string{"'RELATIVE"},
@@ -32,8 +32,6 @@ func TestQuery(t *testing.T) {
 			"source":       []string{"'*2Fapplication*2Fsample1", "'*2Fapplication*2Fsample2"},
 		})
 	})
-
-	// litter.Dump(q)
 }
 
 func TestEscape(t *testing.T) {
