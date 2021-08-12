@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-// Go's url.QueryEscape differes from javascript's encodeURIComponent.
-// It does follow the spec, but it causes issues with the aws urls.
 var unescape = strings.NewReplacer(
 	"+", "%20",
 	"%21", "!",
@@ -18,7 +16,9 @@ var unescape = strings.NewReplacer(
 	"%2A", "*",
 )
 
-func EncodeURIComponent(s string) string {
+// Go's url.QueryEscape differes from javascript's encodeURIComponent.
+// It does follow the spec, but it causes issues with the aws urls.
+func QueryEscape(s string) string {
 	s = url.QueryEscape(s)
 	return unescape.Replace(s)
 }
@@ -26,8 +26,7 @@ func EncodeURIComponent(s string) string {
 type Query map[string][]string
 
 func (q Query) Add(key, value string, quote bool) {
-	value = url.QueryEscape(value)
-	value = unescape.Replace(value)
+	value = QueryEscape(value)
 	value = strings.ReplaceAll(value, "%", "*")
 	if quote {
 		value = "'" + value
