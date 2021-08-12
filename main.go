@@ -94,7 +94,7 @@ func main() {
 		}
 		all = append(all, lambdas...)
 	}
-	fmt.Fprintf(tw, "InsightLink:\t%s\n", LogInsightsLink(region, all))
+	fmt.Fprintf(tw, "LogInsights:\t%s\n", LogInsightsLink(region, all))
 	if err := tw.Flush(); err != nil {
 		log.Fatal(err)
 	}
