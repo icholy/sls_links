@@ -11,10 +11,9 @@ import (
 )
 
 type Lambda struct {
-	Name     string
-	Link     string
-	LogGroup string
-	LogLink  string
+	Name    string
+	Link    string
+	LogLink string
 }
 
 type ServerlessYML struct {
@@ -49,9 +48,12 @@ func (s *ServerlessYML) LogInsightsURL(region, env string) string {
 
 func main() {
 	var region, env, filename string
+	var openlambda, openlogs bool
 	flag.StringVar(&region, "region", "us-east-1", "aws region")
 	flag.StringVar(&env, "env", "staging", "deployment environment")
 	flag.StringVar(&filename, "file", "serverless.yml", "serverless configuration file")
+	flag.BoolVar(&openlambda, "open.lambda", false, "open all lambda links in default browser")
+	flag.BoolVar(&openlogs, "open.logs", false, "open all log links in default browser")
 	flag.Parse()
 	data, err := os.ReadFile(filename)
 	if err != nil {
@@ -66,7 +68,18 @@ func main() {
 	for _, lambda := range config.Lambdas(region, env) {
 		fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
 		fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
+
 		fmt.Fprintf(tw, "LogLink:\t%s\n\n", lambda.LogLink)
+		if openlambda {
+			if err := OpenBrowser(lambda.Link); err != nil {
+				log.Println(err)
+			}
+		}
+		if openlogs {
+			if err := OpenBrowser(lambda.LogLink); err != nil {
+				log.Println(err)
+			}
+		}
 	}
 	if err := tw.Flush(); err != nil {
 		log.Fatal(err)
