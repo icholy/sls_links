@@ -12,9 +12,9 @@ import (
 )
 
 type Lambda struct {
-	Name    string
-	Link    string
-	LogLink string
+	Name       string
+	LambdaLink string
+	LogLink    string
 }
 
 type ServerlessYML struct {
@@ -27,9 +27,9 @@ func (s *ServerlessYML) Lambdas(region, env string) []Lambda {
 	for key := range s.Functions {
 		name := fmt.Sprintf("%s-%s-%s", s.Service, env, key)
 		lambdas = append(lambdas, Lambda{
-			Name:    name,
-			Link:    Link(region, name),
-			LogLink: LogLink(region, name),
+			Name:       name,
+			LambdaLink: LambdaLink(region, name),
+			LogLink:    LogLink(region, name),
 		})
 	}
 	return lambdas
@@ -78,11 +78,11 @@ func main() {
 		}
 		lambdas := config.Lambdas(region, env)
 		for _, lambda := range lambdas {
-			fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
-			fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
-			fmt.Fprintf(tw, "LogLink:\t%s\n\n", lambda.LogLink)
+			fmt.Fprintf(tw, "Name:\t%s\n", lambda.Name)
+			fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.LambdaLink)
+			fmt.Fprintf(tw, "Logs:\t%s\n\n", lambda.LogLink)
 			if openall || openlambda {
-				if err := OpenBrowser(lambda.Link); err != nil {
+				if err := OpenBrowser(lambda.LambdaLink); err != nil {
 					log.Println(err)
 				}
 			}

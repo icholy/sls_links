@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func Link(region, name string) string {
+func LambdaLink(region, name string) string {
 	return fmt.Sprintf("https://console.aws.amazon.com/lambda/home?region=%s#/functions/%s", region, name)
 }
 
