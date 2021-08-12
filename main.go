@@ -34,18 +34,6 @@ func (s *ServerlessYML) Lambdas(region, env string) []Lambda {
 	return lambdas
 }
 
-func (s *ServerlessYML) LogInsightsURL(region, env string) string {
-	query := QueryDetails{}
-	for _, lambda := range s.Lambdas(region, env) {
-		query.Add("source", "/aws/lambda/"+lambda.Name, true)
-	}
-	return fmt.Sprintf(
-		"https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights%s",
-		region,
-		query.Encode(),
-	)
-}
-
 func main() {
 	var region, env, filename string
 	var openlambda, openlogs, openall bool
@@ -64,9 +52,9 @@ func main() {
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		log.Fatal(err)
 	}
+	lambdas := config.Lambdas(region, env)
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-
-	for _, lambda := range config.Lambdas(region, env) {
+	for _, lambda := range lambdas {
 		fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
 		fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
 
@@ -82,6 +70,7 @@ func main() {
 			}
 		}
 	}
+	fmt.Fprintf(tw, "InsightLink:\t%s\n", LogInsightsLink(region, lambdas))
 	if err := tw.Flush(); err != nil {
 		log.Fatal(err)
 	}

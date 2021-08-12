@@ -20,3 +20,15 @@ func LogLink(region, lambda string) string {
 		group,
 	)
 }
+
+func LogInsightsLink(region string, lambdas []Lambda) string {
+	query := QueryDetails{}
+	for _, lambda := range lambdas {
+		query.Add("source", "/aws/lambda/"+lambda.Name, true)
+	}
+	return fmt.Sprintf(
+		"https://console.aws.amazon.com/cloudwatch/home?region=%s#logsV2:logs-insights%s",
+		region,
+		query.Encode(),
+	)
+}
