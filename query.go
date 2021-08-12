@@ -75,7 +75,7 @@ func (q Query) Encode(name string) string {
 func Escape(s string) string {
 	var b strings.Builder
 	for _, r := range s {
-		if ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z') ||
+		if ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z') || ('0' <= r && r <= '9') ||
 			r == '@' || r == '*' || r == '_' || r == '+' || r == '-' || r == '.' || r == '/' {
 			b.WriteRune(r)
 			continue
