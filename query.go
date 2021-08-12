@@ -3,13 +3,31 @@ package main
 import (
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 )
+
+// Go's url.QueryEscape differes from javascript's encodeURIComponent.
+// It does follow the spec, but it causes issues with the aws urls.
+var unescape = strings.NewReplacer(
+	"+", "%20",
+	"%21", "!",
+	"%27", "'",
+	"%28", "(",
+	"%29", ")",
+	"%2A", "*",
+)
+
+func EncodeURIComponent(s string) string {
+	s = url.QueryEscape(s)
+	return unescape.Replace(s)
+}
 
 type Query map[string][]string
 
 func (q Query) Add(key, value string, quote bool) {
 	value = url.QueryEscape(value)
+	value = unescape.Replace(value)
 	value = strings.ReplaceAll(value, "%", "*")
 	if quote {
 		value = "'" + value
@@ -20,15 +38,19 @@ func (q Query) Add(key, value string, quote bool) {
 func (q Query) Encode(name string) string {
 	var b strings.Builder
 	b.WriteString("~(")
-	first := true
-	for key, values := range q {
-		if first {
-			first = false
-		} else {
+	// sort the keys to get a deterministic output order
+	keys := make([]string, 0, len(q))
+	for key := range q {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for i, key := range keys {
+		if i > 0 {
 			b.WriteByte('~')
 		}
 		b.WriteString(key)
 		b.WriteByte('~')
+		values := q[key]
 		switch len(values) {
 		case 0:
 		case 1:
