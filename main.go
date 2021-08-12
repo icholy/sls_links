@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"text/tabwriter"
 
 	"gopkg.in/yaml.v3"
@@ -34,43 +35,66 @@ func (s *ServerlessYML) Lambdas(region, env string) []Lambda {
 	return lambdas
 }
 
+func ReadServerlessYML(name string) (*ServerlessYML, error) {
+	// if we've been given a directory, look for a serverless.yml file in it
+	info, err := os.Stat(name)
+	if err != nil {
+		return nil, err
+	}
+	if info.IsDir() {
+		return ReadServerlessYML(filepath.Join(name, "serverless.yml"))
+	}
+	data, err := os.ReadFile(name)
+	if err != nil {
+		return nil, err
+	}
+	var config ServerlessYML
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
 func main() {
-	var region, env, filename string
+	var region, env string
 	var openlambda, openlogs, openall bool
 	flag.StringVar(&region, "region", "us-east-1", "aws region")
 	flag.StringVar(&env, "env", "staging", "deployment environment")
-	flag.StringVar(&filename, "file", "serverless.yml", "serverless configuration file")
 	flag.BoolVar(&openlambda, "open.lambdas", false, "open all lambda links in default browser")
 	flag.BoolVar(&openlogs, "open.logs", false, "open all log links in default browser")
 	flag.BoolVar(&openall, "open", false, "open all links in default browser")
 	flag.Parse()
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		log.Fatal(err)
+	// if no paths were provided, look in the current directory
+	paths := flag.Args()
+	if len(paths) == 0 {
+		paths = []string{"."}
 	}
-	var config ServerlessYML
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		log.Fatal(err)
-	}
-	lambdas := config.Lambdas(region, env)
+	all := []Lambda{}
 	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-	for _, lambda := range lambdas {
-		fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
-		fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
-
-		fmt.Fprintf(tw, "LogLink:\t%s\n\n", lambda.LogLink)
-		if openall || openlambda {
-			if err := OpenBrowser(lambda.Link); err != nil {
-				log.Println(err)
+	for _, path := range paths {
+		config, err := ReadServerlessYML(path)
+		if err != nil {
+			log.Fatal(err)
+		}
+		lambdas := config.Lambdas(region, env)
+		for _, lambda := range lambdas {
+			fmt.Fprintf(tw, "Lambda:\t%s\n", lambda.Name)
+			fmt.Fprintf(tw, "Link:\t%s\n", lambda.Link)
+			fmt.Fprintf(tw, "LogLink:\t%s\n\n", lambda.LogLink)
+			if openall || openlambda {
+				if err := OpenBrowser(lambda.Link); err != nil {
+					log.Println(err)
+				}
+			}
+			if openall || openlogs {
+				if err := OpenBrowser(lambda.LogLink); err != nil {
+					log.Println(err)
+				}
 			}
 		}
-		if openall || openlogs {
-			if err := OpenBrowser(lambda.LogLink); err != nil {
-				log.Println(err)
-			}
-		}
+		all = append(all, lambdas...)
 	}
-	fmt.Fprintf(tw, "InsightLink:\t%s\n", LogInsightsLink(region, lambdas))
+	fmt.Fprintf(tw, "InsightLink:\t%s\n", LogInsightsLink(region, all))
 	if err := tw.Flush(); err != nil {
 		log.Fatal(err)
 	}
